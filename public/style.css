@@ -18,7 +18,7 @@ body {
         url("https://www.transparenttextures.com/patterns/cream-paper.png"); 
     color: var(--ink-color);
     margin: 0;
-    padding: 100px 20px 60px; /* Отступ под фиксированную навигацию */
+    padding: 140px 20px 60px;
     line-height: 1.6;
 }
 
@@ -538,112 +538,62 @@ button:hover {
 /* ============================================================= */
 
 @media (max-width: 768px) {
-    /* Навигация перестраивается в колонку */
-    .nav-container {
-        flex-direction: column;
-        padding: 10px;
-        gap: 10px;
+    /* На мобилках меню становится выше, поэтому даем body ОГРОМНЫЙ отступ */
+    body {
+        padding-top: 200px !important; 
     }
 
+    .navbar {
+        padding: 10px 0;
+    }
+
+    .nav-container {
+        flex-direction: column;
+        padding: 5px;
+        gap: 5px;
+    }
+
+    .nav-logo {
+        font-size: 1.3rem;
+        letter-spacing: 2px;
+    }
+
+    /* Делаем ссылки компактнее, чтобы они не разлетались на 4 строки */
     .nav-links {
         flex-wrap: wrap;
         justify-content: center;
-        gap: 15px;
+        gap: 8px 15px; /* Узкий зазор между строками */
     }
 
-    /* Отступы для body (учитываем, что шапка стала выше) */
-    body {
-        padding: 120px 10px 40px; 
+    .nav-links a {
+        font-size: 0.75rem; /* Чуть меньше шрифт в меню */
     }
 
-    /* Уменьшаем шрифты заголовков */
     h1 {
-        font-size: 2.2rem;
-        margin-bottom: 30px;
+        font-size: 1.8rem; /* Еще немного меньше заголовок */
+        margin-bottom: 20px;
+        padding-bottom: 10px;
     }
 
-    h1::after {
-        font-size: 1rem;
+    /* Смещаем псевдо-заголовки (ADMIN PANEL / FILTERS), чтобы не мешались */
+    .list-controls::before, 
+    .lists-controls::before {
+        font-size: 0.65rem;
+        top: -8px;
     }
 
-    /* Сжимаем отступы в контейнерах */
-    .list-controls, 
-    .lists-controls, 
-    .form-container, 
-    .item-card {
-        padding: 20px 15px;
-        margin-bottom: 30px;
+    /* Карточки и чат */
+    .item-card, .form-container {
+        padding: 15px;
+        margin-bottom: 20px;
     }
 
-    /* Формы и фильтры выстраиваем вертикально */
-    .list-controls #filter-form,
-    .lists-controls #filter-form,
-    #filter-form {
-        flex-direction: column !important;
-        align-items: stretch !important;
-        gap: 10px;
+    #chat-window {
+        height: 300px; /* Чуть ниже окно на мобилке, чтобы влезла клавиатура */
     }
 
-    #filter-form input, 
-    #filter-form select,
-    .list-controls input, 
-    .list-controls select {
-        width: 100%;
-        min-width: 100%;
-    }
-
-    /* Кнопки в формах на всю ширину */
-    .form-actions {
-        flex-direction: column;
-        gap: 10px;
-    }
-
-    #submit-btn, 
-    #cancel-btn,
-    .filter-actions button {
-        width: 100%;
-    }
-
-    .filter-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    /* Управление комнатами: экстренные меры */
-    .emergency-input-group {
-        flex-direction: column;
-    }
-
-    .emergency-input-group button {
-        padding: 12px;
-        width: 100%;
-    }
-
-    /* Строки комнат в админке */
-    .room-row {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 10px;
-    }
-
-    .room-row div {
-        display: flex;
-        width: 100%;
-        justify-content: space-between;
-    }
-
-    .edit-btn, .delete-btn {
-        flex: 1;
-        text-align: center;
-        margin: 0 2px;
-        padding: 8px 5px;
-        font-size: 1rem;
-    }
-
-    /* Пагинация */
-    .pagination {
-        flex-direction: column;
-        gap: 15px;
-        margin-top: 30px;
+    /* Кнопки в ряд, если помещаются, иначе в столбик */
+    .actions {
+        flex-wrap: wrap;
     }
 }
