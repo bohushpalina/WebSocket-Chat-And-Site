@@ -532,3 +532,118 @@ button:hover {
     letter-spacing: 1px; /* Слегка уменьшим межбуквенный интервал, чтобы текст поместился */
     color: var(--accent-red);
 }
+
+/* ============================================================= */
+/* АДАПТИВНОСТЬ (МОБИЛЬНЫЕ УСТРОЙСТВА)                           */
+/* ============================================================= */
+
+@media (max-width: 768px) {
+    /* Навигация перестраивается в колонку */
+    .nav-container {
+        flex-direction: column;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+    }
+
+    /* Отступы для body (учитываем, что шапка стала выше) */
+    body {
+        padding: 120px 10px 40px; 
+    }
+
+    /* Уменьшаем шрифты заголовков */
+    h1 {
+        font-size: 2.2rem;
+        margin-bottom: 30px;
+    }
+
+    h1::after {
+        font-size: 1rem;
+    }
+
+    /* Сжимаем отступы в контейнерах */
+    .list-controls, 
+    .lists-controls, 
+    .form-container, 
+    .item-card {
+        padding: 20px 15px;
+        margin-bottom: 30px;
+    }
+
+    /* Формы и фильтры выстраиваем вертикально */
+    .list-controls #filter-form,
+    .lists-controls #filter-form,
+    #filter-form {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 10px;
+    }
+
+    #filter-form input, 
+    #filter-form select,
+    .list-controls input, 
+    .list-controls select {
+        width: 100%;
+        min-width: 100%;
+    }
+
+    /* Кнопки в формах на всю ширину */
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #submit-btn, 
+    #cancel-btn,
+    .filter-actions button {
+        width: 100%;
+    }
+
+    .filter-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    /* Управление комнатами: экстренные меры */
+    .emergency-input-group {
+        flex-direction: column;
+    }
+
+    .emergency-input-group button {
+        padding: 12px;
+        width: 100%;
+    }
+
+    /* Строки комнат в админке */
+    .room-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .room-row div {
+        display: flex;
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .edit-btn, .delete-btn {
+        flex: 1;
+        text-align: center;
+        margin: 0 2px;
+        padding: 8px 5px;
+        font-size: 1rem;
+    }
+
+    /* Пагинация */
+    .pagination {
+        flex-direction: column;
+        gap: 15px;
+        margin-top: 30px;
+    }
+}
