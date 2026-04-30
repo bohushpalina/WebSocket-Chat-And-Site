@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PUBLIX</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <span class="nav-logo">PUBLIX</span>
+            <ul class="nav-links">
+                <li><a href="#list-section" onclick="showSection('list-section')">Все издания</a></li>
+                <li><a href="#form-section" onclick="showSection('form-section')" id="nav-add-link">Добавить издание</a></li>
+                <li><a href="/chat">Чат редакции</a></li>
+                <li><a href="#about-section" onclick="showSection('about-section')">О сайте</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Периодические издания</h1>
+        
+        <section id="form-section" class="spa-section" style="display: none;">
+    <div class="form-container">
+        <h3 id="form-title">Регистрация нового издания</h3>
+        <form id="main-form">
+            <input type="hidden" id="edit-id"> 
+            
+            <div class="form-group">
+                <label>Название издания</label>
+                <input type="text" id="title" placeholder="Например, Наука и Жизнь" required>
+            </div>
+
+            <div class="form-group">
+                <label>Краткое описание</label>
+                <textarea id="description" placeholder="О чем это издание?..." required></textarea>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="submit-btn">ДОБАВИТЬ В АРХИВ</button>
+                <button type="button" id="cancel-btn" style="display:none;">ОТМЕНИТЬ</button>
+            </div>
+        </form>
+    </div>
+</section>
+
+        <section id="list-section" class="spa-section">
+            <div class="list-controls">
+                <form method="GET" action="/" id="filter-form">
+                    <input type="text" name="search" placeholder="Поиск издания..." value="<%= search %>">
+                    
+                    <select name="sort">
+                        <option value="">Без сортировки</option>
+                        <option value="asc" <%= sort === 'asc' ? 'selected' : '' %>>По алфавиту (А-Я)</option>
+                        <option value="desc" <%= sort === 'desc' ? 'selected' : '' %>>В обратном порядке (Я-А)</option>
+                    </select>
+                    
+                    <div class="filter-actions">
+                        <button type="submit">Применить</button>
+                        <a href="/" class="reset-link">Сбросить</a>
+                    </div>
+                </form>
+            </div>
+
+            <div id="items-list">
+                <% if (items.length === 0) { %>
+                    <p class="no-results">Издания не найдены в архиве.</p>
+                <% } else { %>
+                    <% items.forEach(item => { %>
+                        <div class="item-card" data-id="<%= item.id %>">
+                            <div class="item-info">
+                                <strong><%= item.title %></strong>
+                                <p><%= item.description %></p>
+                            </div>
+                            <div class="actions">
+                                <button class="edit-btn" onclick="startEdit('<%= item.id %>', '<%= item.title %>', `<%= item.description %>`)">РЕДАКТИРОВАТЬ</button>
+                                <button class="delete-btn" onclick="deleteItem('<%= item.id %>')">УДАЛИТЬ</button>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } %>
+            </div>
+
+            <% if (totalPages > 1) { %>
+                <div class="pagination">
+                    <% if (currentPage > 1) { %>
+                        <a href="/?page=<%= currentPage - 1 %>&search=<%= search %>&sort=<%= sort %>#list-section" class="pag-btn">&laquo; Назад</a>
+                    <% } %>
+                    
+                    <span class="pag-info">Лист <%= currentPage %> из <%= totalPages %></span>
+                    
+                    <% if (currentPage < totalPages) { %>
+                        <a href="/?page=<%= currentPage + 1 %>&search=<%= search %>&sort=<%= sort %>#list-section" class="pag-btn">Вперед &raquo;</a>
+                    <% } %>
+                </div>
+            <% } %>
+        </section>
+
+        <section id="about-section" class="spa-section" style="display: none;">
+            <div class="form-container">
+                <h3>Информация о сайте</h3>
+                <p>PUBLIX — это независимый цифровой архив, созданный для систематизации и хранения периодических изданий. Мы верим, что печатное слово не должно исчезать в цифровом хаосе.</p>
+                <p>Наш сайт позволяет редакторам и архивариусам вести строгий учет журналов, газет и альманахов, сохраняя их историю для будущих поколений.</p>
+                <hr class="paper-divider">
+                <p class="author-signature">
+                    Автор сайта: Богуш Полина
+                </p>
+            </div>
+        </section>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>

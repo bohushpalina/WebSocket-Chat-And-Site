@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PUBLIX | Редакционный чат</title>
+    <link rel="stylesheet" href="/style.css">
+    <script src="/socket.io/socket.io.js"></script>
+</head>
+
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            <span class="nav-logo">PUBLIX</span>
+            <ul class="nav-links">
+                <li><a href="/">Архив</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <h1 id="chat-title">Редакционный узел</h1>
+
+        <section id="login-section" class="form-container">
+            <h3>Идентификация сотрудника</h3>
+
+            <div class="form-group">
+                <label>Ваш псевдоним</label>
+                <input type="text" id="username" placeholder="Имя..." required>
+            </div>
+
+            <div class="form-group">
+                <label>Должность</label>
+                <select id="user-role" onchange="toggleAdminTools(this.value)">
+                    <option value="User">Корректор (User)</option>
+                    <option value="Admin">Редактор (Admin)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Выберите комнату</label>
+                <select id="room-select"></select>
+            </div>
+
+            <button onclick="joinChat()" style="width:100%">
+                ВОЙТИ В СИСТЕМУ
+            </button>
+        </section>
+
+        <section id="chat-section" style="display: none;">
+
+            <div id="admin-room-manager" class="lists-controls" style="display:none; margin-bottom: 20px;">
+                <div id="filter-form">
+                    <input type="text" id="new-room-input" placeholder="Название новой комнаты">
+                    <button onclick="createRoom()">СОЗДАТЬ КОМНАТУ</button>
+                </div>
+
+                <div id="rooms-edit-list">
+                    <strong>Управление комнатами:</strong><br>
+                </div>
+
+                <div class="admin-emergency-block">
+                    <button onclick="clearAllMessages()" class="delete-btn" style="margin-top: 10px; margin-bottom: 15px; display: block; margin-left: auto; margin-right: auto;">
+                        ОЧИСТИТЬ ВСЮ ИСТОРИЮ КОМНАТЫ
+                    </button>
+
+                    <div class="emergency-input-group">
+                        <input type="text" id="ban-name-input" placeholder="Имя для бана...">
+                        <button onclick="banUser()">ЗАБАНИТЬ</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chat-window-wrapper">
+                <div id="chat-window"></div>
+            </div>
+
+            <div class="form-container" style="margin-top:20px;">
+                <div class="form-group">
+                    <textarea id="message-input" placeholder="Введите текст сообщения..."></textarea>
+                </div>
+
+                <button onclick="sendMessage()" style="width:100%">
+                    ОТПРАВИТЬ В ЭФИР
+                </button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <script>
+        const socket = io();
+
+        let myName, myRole, myRoom;
+
+        // ================= ROOMS =================
+        socket.on('room_list', (rooms) => {
+
+            const select = document.getElementById('room-select');
+            const manager = document.getElementById('rooms-edit-list');
+
+            const currentSelectedValue = select.value;
+
+            select.innerHTML = '';
+            manager.innerHTML = '<strong>Управление комнатами:</strong><br>';
+
+            rooms.forEach(room => {
+
+                const opt = document.createElement('option');
+                opt.value = room.name;
+                opt.textContent = room.name;
+                select.appendChild(opt);
+
+                if (myRole === 'Admin') {
+
+                    const roomRow = document.createElement('div');
+                    roomRow.className = 'room-row';
+
+                    roomRow.innerHTML = `
+                        <span style="font-weight: 500;">${room.name}</span>
+                        <div>
+                            <button class="edit-btn" onclick="editRoom('${room.id}')">
+                                Переименовать
+                            </button>
+                            <button class="delete-btn" onclick="socket.emit('delete_room', '${room.id}')">
+                                удалить
+                            </button>
+                        </div>
+                    `;
+
+                    manager.appendChild(roomRow);
+                }
+            });
+
+            if (Array.from(select.options)
+                .some(o => o.value === currentSelectedValue)) {
+                select.value = currentSelectedValue;
+            }
+        });
+
+        // ================= HISTORY =================
+        socket.on('init_history', (history) => {
+            document.getElementById('login-section').style.display = 'none';
+            document.getElementById('chat-section').style.display = 'block';
+            document.getElementById('chat-title').innerText = `Комната: ${myRoom}`;
+
+            if (myRole === 'Admin') {
+                document.getElementById('admin-room-manager').style.display = 'block';
+                socket.emit('get_rooms');
+            }
+
+            const win = document.getElementById('chat-window');
+            win.innerHTML = '';
+            history.forEach(renderMessage);
+        });
+
+        // ================= RENDER MESSAGE =================
+        function renderMessage(data) {
+
+            const win = document.getElementById('chat-window');
+            const msgDiv = document.createElement('div');
+            
+            msgDiv.className = 'chat-message-card';
+
+            if (data.system) {
+                msgDiv.classList.add('system-msg');
+                msgDiv.innerHTML = `<small><i>${data.text}</i></small>`;
+            } else {
+                if (data.role === 'Admin') {
+                    msgDiv.classList.add('admin-msg');
+                } else {
+                    msgDiv.classList.add('user-msg');
+                }
+
+                msgDiv.setAttribute('data-id', data.id);
+
+                let adminDeleteBtn = '';
+                if (myRole === 'Admin') {
+                    adminDeleteBtn = `
+                        <button class="delete-btn" onclick="deleteMsg('${data.id}')">
+                            Удалить
+                        </button>`;
+                }
+
+                msgDiv.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <small style="color:var(--accent-red); font-weight:bold;">
+                            ${data.name} [${data.role}]
+                        </small>
+                        <div>${adminDeleteBtn}</div>
+                    </div>
+                    <p style="margin:5px 0">${data.text}</p>
+                `;
+            }
+
+            win.appendChild(msgDiv);
+            win.scrollTop = msgDiv.offsetTop;
+        }
+
+        function toggleAdminTools(role) {}
+
+        // ================= JOIN =================
+        function joinChat() {
+            myName = document.getElementById('username').value;
+            myRole = document.getElementById('user-role').value;
+            myRoom = document.getElementById('room-select').value;
+
+            if (!myName) return alert("Введите имя!");
+
+            socket.emit('join', {
+                name: myName,
+                role: myRole,
+                room: myRoom
+            });
+        }
+
+        // ================= ACTIONS =================
+        function createRoom() {
+            const name = document.getElementById('new-room-input').value;
+            if (name) {
+                socket.emit('create_room', name);
+                document.getElementById('new-room-input').value = '';
+            }
+        }
+
+        function editRoom(id) {
+            const newName = prompt("Введите новое название комнаты:");
+            if (newName) {
+                socket.emit('edit_room', { id, newName });
+            }
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message-input');
+            if (input.value) {
+                socket.emit('send_message', input.value);
+                input.value = '';
+            }
+        }
+
+        // ================= ADMIN =================
+        function deleteMsg(msgId) {
+            socket.emit('admin_delete', {
+                msgId,
+                room: myRoom
+            });
+        }
+
+        function clearAllMessages() {
+            if (confirm('Вы уверены, что хотите полностью очистить историю этого отдела?')) {
+                socket.emit('admin_clear_history', myRoom);
+            }
+        }
+
+        function banUser() {
+            const name = document.getElementById('ban-name-input').value;
+            if (name) {
+                socket.emit('admin_block', name);
+                document.getElementById('ban-name-input').value = '';
+            }
+        }
+
+        // ================= EVENTS =================
+        socket.on('error_msg', (msg) => {
+            alert(msg);
+            if (msg.includes('заблокирован') || msg.includes('ограничен')) {
+                window.location.reload();
+            }
+        });
+
+        socket.on('chat_message', renderMessage);
+
+        socket.on('delete_message', (msgId) => {
+            document.querySelector(`[data-id="${msgId}"]`)?.remove();
+        });
+
+        socket.on('room_renamed', (data) => {
+            if (myRoom === data.oldName) {
+                myRoom = data.newName;
+                document.getElementById('chat-title').innerText = `Отдел: ${myRoom}`;
+            }
+        });
+
+        socket.emit('get_rooms');
+    </script>
+
+</body>
+</html>
